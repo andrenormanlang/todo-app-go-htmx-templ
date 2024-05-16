@@ -1,5 +1,5 @@
 
-# To-Do List Application
+# Golang, HTMX & Templ To-Do List Application
 
 This is a simple web-based To-Do List application implemented in Go. The application supports adding, updating, and deleting tasks. It uses an HTML template for rendering the user interface and stores tasks in a JSON file.
 
