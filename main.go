@@ -2,16 +2,18 @@ package main
 
 import (
     "bytes"
+    "encoding/json"
     "html/template"
     "log"
     "net/http"
+    "os"
     "strconv"
     "sync"
 )
 
 type Task struct {
-    ID   int
-    Text string
+    ID   int    `json:"id"`
+    Text string `json:"text"`
 }
 
 var (
@@ -20,7 +22,51 @@ var (
     nextID     = 1
 )
 
+func loadTasksFromFile() {
+    file, err := os.Open("tasks.json")
+    if err != nil {
+        if os.IsNotExist(err) {
+            // File does not exist, no tasks to load
+            return
+        }
+        log.Println("Error opening JSON file:", err)
+        return
+    }
+    defer file.Close()
+
+    decoder := json.NewDecoder(file)
+    err = decoder.Decode(&tasks)
+    if err != nil {
+        log.Println("Error decoding JSON file:", err)
+    } else {
+        // Update nextID based on the highest ID in the loaded tasks
+        for _, task := range tasks {
+            if task.ID >= nextID {
+                nextID = task.ID + 1
+            }
+        }
+    }
+}
+
+func saveTasksToFile() {
+    file, err := os.Create("tasks.json")
+    if err != nil {
+        log.Println("Error creating JSON file:", err)
+        return
+    }
+    defer file.Close()
+
+    encoder := json.NewEncoder(file)
+    encoder.SetIndent("", "  ")
+    err = encoder.Encode(tasks)
+    if err != nil {
+        log.Println("Error encoding JSON to file:", err)
+    }
+}
+
 func main() {
+    loadTasksFromFile() // Load tasks from file at startup
+
     http.HandleFunc("/", indexHandler)
     http.HandleFunc("/add", addTaskHandler)
     http.HandleFunc("/delete", deleteTaskHandler)
@@ -55,6 +101,9 @@ func addTaskHandler(w http.ResponseWriter, r *http.Request) {
     nextID++
     tasks = append(tasks, task)
     tasksMutex.Unlock()
+
+    // Save tasks to file
+    saveTasksToFile()
 
     // Render the single new task
     var htmlBuffer bytes.Buffer
@@ -91,6 +140,10 @@ func deleteTaskHandler(w http.ResponseWriter, r *http.Request) {
         if task.ID == taskID {
             tasks = append(tasks[:i], tasks[i+1:]...)
             tasksMutex.Unlock()
+
+            // Save tasks to file
+            saveTasksToFile()
+
             w.WriteHeader(http.StatusOK)
             w.Write([]byte("Task deleted"))
             return
@@ -126,6 +179,9 @@ func updateTaskHandler(w http.ResponseWriter, r *http.Request) {
     for i, task := range tasks {
         if task.ID == taskID {
             tasks[i].Text = text
+
+            // Save tasks to file
+            saveTasksToFile()
 
             // Render the updated task
             var htmlBuffer bytes.Buffer
