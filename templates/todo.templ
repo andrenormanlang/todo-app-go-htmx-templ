@@ -3,7 +3,7 @@
     <span id="task-text-{{.ID}}">{{.Text}}</span>
     <form id="edit-task-form-{{.ID}}" hx-post="/update" hx-target="#task-{{.ID}}" hx-swap="outerHTML" class="flex space-x-2" style="display:none;">
         <input type="hidden" name="id" value="{{.ID}}">
-        <input type="text" name="text" value="{{.Text}}" required class="p-2 border border-gray-300 rounded">
+        <input type="text" name="text" value="{{.Text}}" required class="p-2 mb-2 border border-gray-300 rounded">
         <button type="submit" class="p-2 bg-blue-500 text-white rounded hover:bg-blue-600">Update</button>
         <button type="button" class="p-2 bg-gray-500 text-white rounded hover:bg-gray-600" onclick="toggleEditForm('{{.ID}}');">Cancel</button>
     </form>
