@@ -1,0 +1,16 @@
+{{define "task"}}
+<li id="task-{{.ID}}" class="bg-white p-4 mb-4 border border-gray-300 rounded flex justify-between items-center">
+    <span id="task-text-{{.ID}}">{{.Text}}</span>
+    <form id="edit-task-form-{{.ID}}" hx-post="/update" hx-target="#task-{{.ID}}" hx-swap="outerHTML" class="flex space-x-2" style="display:none;">
+        <input type="hidden" name="id" value="{{.ID}}">
+        <input type="text" name="text" value="{{.Text}}" required class="p-2 border border-gray-300 rounded">
+        <button type="submit" class="p-2 bg-blue-500 text-white rounded hover:bg-blue-600">Update</button>
+        <button type="button" class="p-2 bg-gray-500 text-white rounded hover:bg-gray-600" onclick="toggleEditForm('{{.ID}}');">Cancel</button>
+    </form>
+    <div class="flex space-x-2">
+        <button class="p-2 bg-yellow-500 text-white rounded hover:bg-yellow-600" onclick="toggleEditForm('{{.ID}}');">Edit</button>
+        <button class="p-2 bg-red-500 text-white rounded hover:bg-red-600" hx-post="/delete" hx-vals='{"id":"{{.ID}}"}' hx-target="#task-{{.ID}}" hx-swap="delete">Delete</button>
+    </div>
+</li>
+{{end}}
+
